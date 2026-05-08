@@ -12,12 +12,10 @@ public class Hand{
 		cards.add(card);
 	}
 
-
 	// method for hand val and ace bust handling
 	public int getValue(){
 		int sum = 0;
 		int aces = 0;
-
 		for(Card c : cards){
 			sum += c.value();
 			if(c.rank == Card.Rank.ACE){
@@ -30,21 +28,17 @@ public class Hand{
 			sum-=10;
 			aces--;
 		}
-
 		return sum;
 	}
 
 	// dealer hand sum (sum without the hole card)
 	public int getVisibleTotal(){
 		if(cards.size() <= 1) return 0;
-
 		int sum = 0;
 		int aces = 0;
-
 		for(int i = 1; i < cards.size(); i++){
 			Card c = cards.get(i);
 			sum += c.value();
-
 			// Ace bust handling: ace incrementation
 			if(c.rank == Card.Rank.ACE){
 				aces++;
@@ -59,18 +53,16 @@ public class Hand{
 	}
 
 	// Natural blackjac check (when hand has only 2 cards and equal to 21)
-
 	public boolean isBlackjack(){
 		return cards.size() == 2 && getValue() == 21;
 	}
 
 	// Empty the hand
-
 	public void clear(){
 		cards.clear();
 	}
 
-	/** Needed for drawing: access each card. */
+	// Needed for drawing: access each card
     public ArrayList<Card> getCards() {
         return cards;
     }
