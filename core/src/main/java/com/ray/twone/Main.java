@@ -17,13 +17,13 @@ public class Main extends ApplicationAdapter {
     private HashMap<String, Texture> cardTextures;
     private Texture cardBack;
     private Deck deck;
-    private boolean testDone = false;   // so we print only once
+    private BlackjackGame game;
+    private boolean testDone = false;
 
     @Override
     public void create() {
         batch = new SpriteBatch();
 
-        // Load textures (same as before)
         cardTextures = new HashMap<>();
         for (Card.Suit suit : Card.Suit.values()) {
             for (Card.Rank rank : Card.Rank.values()) {
@@ -35,32 +35,31 @@ public class Main extends ApplicationAdapter {
         cardBack = new Texture("cardsTPerson/28_kerenel_Cards.png");
 
         deck = new Deck(cardTextures);
+        game = new BlackjackGame(deck);
     }
 
     @Override
     public void render() {
-        // Run the test exactly once
         if (!testDone) {
             testDone = true;
-            Hand hand = new Hand();
-            hand.addCard(deck.deal());
-            hand.addCard(deck.deal());
-            System.out.println("Hand: " + hand);
-            System.out.println("Value: " + hand.getValue());
-            System.out.println("Blackjack: " + hand.isBlackjack());
+            // Simulate a few actions to test
+            System.out.println("Player hand: " + game.getPlayerHand());
+            System.out.println("Dealer visible hand (after hidden): " + game.getDealerHand().getVisibleTotal());
+            game.playerHit();
+            System.out.println("After hit, player: " + game.getPlayerHand() + " value=" + game.getPlayerHand().getValue());
+            game.playerStand();
+            System.out.println("After stand, result: " + game.getResultMessage());
         }
 
-        // Green table background
         ScreenUtils.clear(0f, 0.5f, 0f, 1f);
         batch.begin();
-        // (optional: draw the cards to see them)
         batch.end();
     }
 
     @Override
     public void dispose() {
         batch.dispose();
-        for (Texture tex : cardTextures.values()) tex.dispose();
+        for (Texture t : cardTextures.values()) t.dispose();
         cardBack.dispose();
     }
 }
