@@ -1,4 +1,4 @@
-package com.ray.twone;
+package com.ray.twone.game;
 
 import com.badlogic.gdx.graphics.Texture;
 

@@ -1,4 +1,4 @@
-package com.ray.twone;
+package com.ray.twone.game;
 
 public class BlackjackGame{
 	private Deck deck;

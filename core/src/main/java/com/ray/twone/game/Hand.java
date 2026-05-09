@@ -1,4 +1,4 @@
-package com.ray.twone;
+package com.ray.twone.game;
 
 import java.util.Collections;
 import java.util.ArrayList;
