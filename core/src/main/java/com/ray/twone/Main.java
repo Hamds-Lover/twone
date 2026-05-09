@@ -10,6 +10,10 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.gdx.math.Vector3;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,12 +47,30 @@ public class Main extends ApplicationAdapter {
     // game font
     private BitmapFont font;
 
+    // Viewport and camera
+    private Viewport viewport;
+    private OrthographicCamera camera;
+
+    private static final float WORLD_WIDTH = 1280f;
+    private static final float WORLD_HEIGHT = 720f;
+
     @Override
     public void create() {
+        //cam and viewport stuff
+        camera = new OrthographicCamera();
+        viewport = new FitViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
+        viewport.apply();
+        camera.position.set(WORLD_WIDTH/2f, WORLD_HEIGHT/2f, 0);
+        camera.update();
+
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
         font = new BitmapFont();
         font.getData().setScale(2);
+
+        // Projection matrix?
+        batch.setProjectionMatrix(camera.combined);
+        shapeRenderer.setProjectionMatrix(camera.combined);
 
         // Load all card textures
         cardTextures = new HashMap<>();
@@ -66,14 +88,9 @@ public class Main extends ApplicationAdapter {
         game = new BlackjackGame(deck);
 
         // Create the buttons (should appear in the bottom right)
-        float btnWidth = 80f, btnHeight = 40f;
-        float margin = 10f;
-
-        hitButton = new Rectangle(Gdx.graphics.getWidth() - 2 * (btnWidth + margin), margin, btnWidth, btnHeight);
-        standButton = new Rectangle(Gdx.graphics.getWidth() - (btnWidth + margin), margin, btnWidth, btnHeight);
-        newGameButton = new Rectangle(Gdx.graphics.getWidth() / 2f - 40f, Gdx.graphics.getHeight() / 2f - 70f, 80, 40);
-        // Set initial projection
-        resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        hitButton = new Rectangle(WORLD_WIDTH - 2 * (BTN_WIDTH + BTN_MARGIN), BTN_MARGIN, BTN_WIDTH, BTN_HEIGHT);
+        standButton = new Rectangle(WORLD_WIDTH - (BTN_WIDTH + BTN_MARGIN), BTN_MARGIN, BTN_WIDTH, BTN_HEIGHT);
+        newGameButton = new Rectangle(WORLD_WIDTH/2f - BTN_WIDTH / 2f, WORLD_HEIGHT/2f - 70f, BTN_WIDTH, BTN_HEIGHT);
     }
 
     @Override
@@ -82,10 +99,11 @@ public class Main extends ApplicationAdapter {
         ScreenUtils.clear(0f, 0.5f, 0f, 1f);
 
         // btn touch detection
-
         if (Gdx.input.justTouched()) {
-            float touchX = Gdx.input.getX();
-            float touchY = Gdx.graphics.getHeight() - Gdx.input.getY();
+            Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+            camera.unproject(touchPos);
+            float touchX = touchPos.x;
+            float touchY = touchPos.y;
 
             if (!game.isGameOver() && game.isPlayerTurn()) {
                 if (hitButton.contains(touchX, touchY)) {
@@ -102,11 +120,12 @@ public class Main extends ApplicationAdapter {
             }
         }
 
+        camera.update();
+
         // Draw the cards
         batch.begin();
-
         // Dealer hand (at the top)
-        float dealerY = Gdx.graphics.getHeight() - CARD_HEIGHT - 40f;
+        float dealerY = WORLD_HEIGHT - CARD_HEIGHT - 40f;
         drawHand(game.getDealerHand(), dealerY, true);
 
         // Player hand (bottom)
@@ -120,8 +139,8 @@ public class Main extends ApplicationAdapter {
             //float textWidth = font.getRegion().getRegionWidth() * font.getData().scaleX;
 
             GlyphLayout layout = new GlyphLayout(font, msg);
-            float textX = (Gdx.graphics.getWidth()- layout.width) / 2f;
-            float textY = (Gdx.graphics.getHeight()- 2f+layout.height) / 2f;
+            float textX = (WORLD_WIDTH- layout.width) / 2f;
+            float textY = (WORLD_HEIGHT +layout.height) / 2f;
             font.draw(batch, msg, textX, textY);
 
         }
@@ -159,7 +178,7 @@ public class Main extends ApplicationAdapter {
         }
         totalWidth += (hand.getCards().size() - 1) * CARD_SPACING;
 
-        float startX = (Gdx.graphics.getWidth() - totalWidth) / 2f;
+        float startX = (WORLD_WIDTH - totalWidth) / 2f;
         float currentX = startX;
         // second loop - draw the hand
         for(int i=0; i<hand.getCards().size(); i++){
@@ -185,8 +204,7 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void resize(int width, int height){
-        batch.setProjectionMatrix(batch.getProjectionMatrix().setToOrtho2D(0, 0, width, height));
-        shapeRenderer.setProjectionMatrix(shapeRenderer.getProjectionMatrix().setToOrtho2D(0, 0, width, height));
+        viewport.update(width, height, true);
     }
 
     @Override
